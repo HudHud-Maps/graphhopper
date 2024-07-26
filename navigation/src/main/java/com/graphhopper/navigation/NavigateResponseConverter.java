@@ -144,7 +144,7 @@ public class NavigateResponseConverter {
         // Add max speed information
         List<PathDetail> maxSpeedDetails = path.getPathDetails().get("max_speed");
         if (maxSpeedDetails != null && !maxSpeedDetails.isEmpty()) {
-            ObjectNode annotationNode = pathJson.putObject("annotation");
+            ObjectNode annotationNode = legJson.putObject("annotation");
             ArrayNode maxSpeedArray = annotationNode.putArray("maxspeed");
 
             int totalPoints = path.getPoints().size();
