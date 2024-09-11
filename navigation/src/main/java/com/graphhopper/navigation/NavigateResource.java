@@ -172,10 +172,11 @@ public class NavigateResource {
                 setLocale(localeStr).
                 // We force the intersection details here as we cannot easily add this to the URL
                 setPathDetails(Arrays.asList(INTERSECTION)).
+                setAlgorithm(Parameters.Algorithms.ALT_ROUTE).
                 putHint(CALC_POINTS, true).
                 putHint(INSTRUCTIONS, enableInstructions).
                 putHint(WAY_POINT_MAX_DISTANCE, minPathPrecision).
-                putHint(Parameters.CH.DISABLE, true).
+                putHint(Parameters.CH.DISABLE, false).
                 putHint(Parameters.Routing.PASS_THROUGH, false);
 
         return graphHopper.route(request);
