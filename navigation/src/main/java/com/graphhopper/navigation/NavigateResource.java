@@ -93,6 +93,7 @@ public class NavigateResource {
             @QueryParam("geometries") @DefaultValue("polyline") String geometries,
             @QueryParam("bearings") @DefaultValue("") String bearings,
             @QueryParam("language") @DefaultValue("en") String localeStr,
+            @QueryParam("no_annotations") @DefaultValue("false") boolean noAnnotations,
             @PathParam("profile") String mapboxProfile) {
 
         /*
@@ -131,11 +132,11 @@ public class NavigateResource {
 
         StopWatch sw = new StopWatch().start();
 
-        GHResponse ghResponse = calcRoute(favoredHeadings, requestPoints, ghProfile, localeStr, enableInstructions, minPathPrecision);
+        GHResponse ghResponse = calcRoute(favoredHeadings, requestPoints, ghProfile, localeStr, enableInstructions, minPathPrecision, noAnnotations);
 
         // Only do this, when there are more than 2 points, otherwise we use alternative routes
         if (!ghResponse.hasErrors() && favoredHeadings.size() > 0) {
-            GHResponse noHeadingResponse = calcRoute(Collections.EMPTY_LIST, requestPoints, ghProfile, localeStr, enableInstructions, minPathPrecision);
+            GHResponse noHeadingResponse = calcRoute(Collections.EMPTY_LIST, requestPoints, ghProfile, localeStr, enableInstructions, minPathPrecision, noAnnotations);
             if (ghResponse.getBest().getDistance() != noHeadingResponse.getBest().getDistance()) {
                 ghResponse.getAll().add(noHeadingResponse.getBest());
             }
@@ -163,15 +164,18 @@ public class NavigateResource {
     }
 
     private GHResponse calcRoute(List<Double> headings, List<GHPoint> requestPoints, String profileStr,
-                                 String localeStr, boolean enableInstructions, double minPathPrecision) {
+                                 String localeStr, boolean enableInstructions, double minPathPrecision, boolean noAnnotations) {
         GHRequest request = new GHRequest(requestPoints);
         if (headings.size() > 0)
             request.setHeadings(headings);
-
+        List<String> pathDetails = new ArrayList<>(Arrays.asList(INTERSECTION));
+        if (!noAnnotations){
+            pathDetails.add("max_speed");
+        }
         request.setProfile(profileStr).
                 setLocale(localeStr).
                 // We force the intersection details here as we cannot easily add this to the URL
-                setPathDetails(Arrays.asList(INTERSECTION, "max_speed")).
+                setPathDetails(pathDetails).
                 setAlgorithm(Parameters.Algorithms.ALT_ROUTE).
                 putHint(CALC_POINTS, true).
                 putHint(INSTRUCTIONS, enableInstructions).
