@@ -140,6 +140,48 @@ public class NavigateResponseConverter {
         pathJson.put("duration", convertToSeconds(path.getTime()));
         pathJson.put("distance", Helper.round(path.getDistance(), 1));
         pathJson.put("voiceLocale", locale.toLanguageTag());
+        
+        // Add max speed information
+        List<PathDetail> maxSpeedDetails = path.getPathDetails().get("max_speed");
+        if (maxSpeedDetails != null && !maxSpeedDetails.isEmpty()) {
+            ObjectNode annotationNode = legJson.putObject("annotation");
+            ArrayNode maxSpeedArray = annotationNode.putArray("maxspeed");
+
+            int totalPoints = path.getPoints().size();
+            int currentIndex = 0;
+
+            for (PathDetail detail : maxSpeedDetails) {
+                int fromIndex = detail.getFirst();
+                int toIndex = detail.getLast();
+
+                // Fill in any gaps with unknown speed objects
+                while (currentIndex < fromIndex) {
+                    ObjectNode speedEntry = maxSpeedArray.addObject();
+                    speedEntry.put("unknown", true);
+                    currentIndex++;
+                }
+
+                // Add speed objects for this detail
+                while (currentIndex < toIndex) {
+                    ObjectNode speedEntry = maxSpeedArray.addObject();
+                    if (detail.getValue() instanceof Number) {
+                        int speedValue = ((Number) detail.getValue()).intValue();
+                        speedEntry.put("speed", speedValue);
+                        speedEntry.put("unit", "km/h");
+                    } else {
+                        speedEntry.put("unknown", true);
+                    }
+                    currentIndex++;
+                }
+            }
+
+            // Fill in any remaining points with unknown speed objects
+            while (currentIndex < totalPoints) {
+                ObjectNode speedEntry = maxSpeedArray.addObject();
+                speedEntry.put("unknown", true);
+                currentIndex++;
+            }
+        }
     }
 
     private static void putLegInformation(ObjectNode legJson, ResponsePath path, int i, long time, double distance) {

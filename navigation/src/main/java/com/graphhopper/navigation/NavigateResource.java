@@ -171,7 +171,7 @@ public class NavigateResource {
         request.setProfile(profileStr).
                 setLocale(localeStr).
                 // We force the intersection details here as we cannot easily add this to the URL
-                setPathDetails(Arrays.asList(INTERSECTION)).
+                setPathDetails(Arrays.asList(INTERSECTION, "max_speed")).
                 setAlgorithm(Parameters.Algorithms.ALT_ROUTE).
                 putHint(CALC_POINTS, true).
                 putHint(INSTRUCTIONS, enableInstructions).
