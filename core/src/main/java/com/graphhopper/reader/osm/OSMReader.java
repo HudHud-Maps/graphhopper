@@ -377,6 +377,23 @@ public class OSMReader {
         EdgeIteratorState edge = baseGraph.edge(fromIndex, toIndex).setDistance(distance);
         osmParsers.handleWayTags(edge.getEdge(), edgeIntAccess, way, relationFlags);
         Map<String, KValue> map = way.getTag("key_values", Collections.emptyMap());
+        map.put("osm_way_id", new KValue(way.getId()));
+        String highway = way.getTag("highway");
+        if (highway != null) {
+            map.put("highway", new KValue(highway));
+        }
+        String roundabout = way.getTag("junction");
+        if (roundabout != null) {
+            map.put("junction", new KValue(roundabout));
+        }
+        String construction = way.getTag("construction");
+        if (construction != null) {
+            map.put("construction", new KValue(construction));
+        }
+        String oneway = way.getTag("oneway");
+        if (oneway != null) {
+            map.put("oneway", new KValue(oneway));
+        }
         if (!map.isEmpty())
             edge.setKeyValues(map);
 
