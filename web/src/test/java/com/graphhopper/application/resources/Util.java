@@ -15,26 +15,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.graphhopper.application.util;
 
-import com.graphhopper.application.GraphHopperServerConfiguration;
-import io.dropwizard.core.server.DefaultServerFactory;
-import io.dropwizard.jetty.HttpConnectorFactory;
+package com.graphhopper.application.resources;
 
-/**
- * @author thomas aulinger
- */
-public class GraphHopperServerTestConfiguration extends GraphHopperServerConfiguration {
+import com.fasterxml.jackson.databind.JsonNode;
+import com.graphhopper.util.BodyAndStatus;
 
-    public GraphHopperServerTestConfiguration() {
-        init();
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
+
+public class Util {
+    public static BodyAndStatus getWithStatus(WebTarget webTarget) {
+        try (Response response = webTarget.request().get()) {
+            return new BodyAndStatus(response.readEntity(JsonNode.class), response.getStatus());
+        }
     }
 
-    private void init() {
-        // The following is to make sure it runs with a random port
-        ((HttpConnectorFactory) ((DefaultServerFactory) getServerFactory()).getApplicationConnectors().get(0)).setPort(0);
-        // this is for admin port
-        ((HttpConnectorFactory) ((DefaultServerFactory) getServerFactory()).getAdminConnectors().get(0)).setPort(0);
+    public static BodyAndStatus postWithStatus(WebTarget webTarget, String json) {
+        try (Response response = webTarget.request().post(Entity.json(json))) {
+            return new BodyAndStatus(response.readEntity(JsonNode.class), response.getStatus());
+        }
     }
 
 }

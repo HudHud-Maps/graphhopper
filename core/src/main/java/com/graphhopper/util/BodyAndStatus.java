@@ -15,26 +15,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.graphhopper.application.util;
 
-import com.graphhopper.application.GraphHopperServerConfiguration;
-import io.dropwizard.core.server.DefaultServerFactory;
-import io.dropwizard.jetty.HttpConnectorFactory;
+package com.graphhopper.util;
 
-/**
- * @author thomas aulinger
- */
-public class GraphHopperServerTestConfiguration extends GraphHopperServerConfiguration {
+import com.fasterxml.jackson.databind.JsonNode;
 
-    public GraphHopperServerTestConfiguration() {
-        init();
+public class BodyAndStatus {
+    private final JsonNode body;
+    private final int status;
+
+    public BodyAndStatus(JsonNode body, int status) {
+        this.body = body;
+        this.status = status;
     }
 
-    private void init() {
-        // The following is to make sure it runs with a random port
-        ((HttpConnectorFactory) ((DefaultServerFactory) getServerFactory()).getApplicationConnectors().get(0)).setPort(0);
-        // this is for admin port
-        ((HttpConnectorFactory) ((DefaultServerFactory) getServerFactory()).getAdminConnectors().get(0)).setPort(0);
+    public JsonNode getBody() {
+        return body;
     }
 
+    public int getStatus() {
+        return status;
+    }
 }
