@@ -150,7 +150,7 @@ public class NavigateResponseConverter {
             int totalPoints = path.getPoints().size();
             int currentIndex = 0;
 
-            for (PathDetail detail : maxSpeedDetails) {
+            for (PathDetail detail : maxSpeedDetails.subList(0, maxSpeedDetails.size() - 1)) {
                 int fromIndex = detail.getFirst();
                 int toIndex = detail.getLast();
 
