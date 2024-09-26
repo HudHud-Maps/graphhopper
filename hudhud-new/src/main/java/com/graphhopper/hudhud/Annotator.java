@@ -256,4 +256,8 @@ public class Annotator {
         GeodesicData gd = Geodesic.WGS84.Inverse(lat1, lon1, lat2, lon2);
         return gd.s12;
     }
+
+    public Map<Long, HudhudWay> getWayMap() {
+        return wayMap;
+    }
 }
