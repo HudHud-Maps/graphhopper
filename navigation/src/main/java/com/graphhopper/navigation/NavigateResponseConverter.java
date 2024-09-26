@@ -147,10 +147,10 @@ public class NavigateResponseConverter {
             ObjectNode annotationNode = legJson.putObject("annotation");
             ArrayNode maxSpeedArray = annotationNode.putArray("maxspeed");
 
-            int totalPoints = path.getPoints().size();
+            int totalPoints = path.getPoints().size() - 1;
             int currentIndex = 0;
 
-            for (PathDetail detail : maxSpeedDetails.subList(0, maxSpeedDetails.size() - 1)) {
+            for (PathDetail detail : maxSpeedDetails) {
                 int fromIndex = detail.getFirst();
                 int toIndex = detail.getLast();
 
