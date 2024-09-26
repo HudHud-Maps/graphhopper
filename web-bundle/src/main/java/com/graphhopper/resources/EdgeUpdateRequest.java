@@ -1,18 +1,25 @@
 package com.graphhopper.resources;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class EdgeUpdateRequest {
-    private String lineString; // Holds the LineString in WKT (Well-Known Text) or GeoJSON format
-    private double speed;      // Holds the speed value associated with the LineString
 
-    // Getters and Setters
-    public String getLineString() {
-        return lineString;
+    @JsonProperty("geometry")
+    private String geometry;
+
+    @JsonProperty("speed")
+    private double speed;
+
+    // Getter and Setter for lineString
+    public String getGeometry() {
+        return geometry;
     }
 
-    public void setLineString(String lineString) {
-        this.lineString = lineString;
+    public void setGeometry(String geometry) {
+        this.geometry = geometry;
     }
 
+    // Getter and Setter for speed
     public double getSpeed() {
         return speed;
     }

@@ -8,13 +8,14 @@ import com.graphhopper.matching.Observation;
 import com.graphhopper.routing.ev.DecimalEncodedValue;
 import com.graphhopper.routing.ev.VehicleSpeed;
 import com.graphhopper.routing.util.EncodingManager;
-import com.graphhopper.storage.index.LocationIndexTree;
 import com.graphhopper.util.EdgeIteratorState;
+import com.graphhopper.util.PMap;
 import com.graphhopper.util.shapes.GHPoint;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.io.WKTReader;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -36,19 +37,29 @@ public class EdgeUpdaterResource {
     private final ReadWriteLock graphLock = new ReentrantReadWriteLock();
     private final MapMatching mapMatching;
 
-    public EdgeUpdaterResource(GraphHopper graphHopper, EncodingManager encodingManager, MapMatching mapMatching) {
+    @Inject
+    public EdgeUpdaterResource(GraphHopper graphHopper) {
         this.graphHopper = graphHopper;
         this.encodingManager = graphHopper.getEncodingManager();
-        this.mapMatching = new MapMatching(graphHopper.getBaseGraph(), (LocationIndexTree) graphHopper.getLocationIndex(), null);
+        PMap hints = new PMap();
+        hints.putObject("profile", "car");
+        this.mapMatching = MapMatching.fromGraphHopper(graphHopper, hints);
+        this.mapMatching.setMeasurementErrorSigma(100);
     }
 
     @POST
-    public Response updateEdge(EdgeUpdateRequest request) {
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response DoPost(List<EdgeUpdateRequest> requests) {
         try {
-            handleEdgeUpdate(request.getLineString(), request.getSpeed());
-
+            for (EdgeUpdateRequest request : requests) {
+                if (request.getGeometry() == null) {
+                    throw new IllegalArgumentException("lineString cannot be null");
+                }
+                handleEdgeUpdate(request.getGeometry(), request.getSpeed());
+            }
             return Response.ok().entity("Edges updated successfully").build();
         } catch (Exception e) {
+            e.printStackTrace();
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("Error updating edges: " + e.getMessage())
                     .build();
@@ -84,5 +95,4 @@ public class EdgeUpdaterResource {
         edge.set(speedEnc, speed);
     }
 }
-
 
