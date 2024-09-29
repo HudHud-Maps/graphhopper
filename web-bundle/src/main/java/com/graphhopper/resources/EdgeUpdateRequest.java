@@ -4,19 +4,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class EdgeUpdateRequest {
 
-    @JsonProperty("geometry")
-    private String geometry;
+    @JsonProperty("wayId")
+    private int wayID;
 
     @JsonProperty("speed")
     private double speed;
 
     // Getter and Setter for lineString
-    public String getGeometry() {
-        return geometry;
+    public int getWayID() {
+        return wayID;
     }
 
-    public void setGeometry(String geometry) {
-        this.geometry = geometry;
+    public void setWayID(int wayID) {
+        this.wayID = wayID;
     }
 
     // Getter and Setter for speed
