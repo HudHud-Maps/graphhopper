@@ -33,8 +33,35 @@ public class Annotator {
     private Map<Long, HudhudWay> wayMap = new HashMap<>();
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     private final Map<Long, Node> nodeMap = new HashMap<>();
+    private final Map<Long, Integer> annotatedWays = new HashMap<>();
     public Annotator(String osmFile) {
         this.osmFile = osmFile;
+    }
+
+    public int getAnnotationInt(int frc, int fow, String oneway) {
+        int res = 0;
+        if (oneway.equals("yes")) {
+            res = res + 1;
+        } else if (oneway.equals("-1")) { 
+            res = res + 2;
+        }
+        res = res + (fow + 1) * 10;
+        res = res + (frc + 1) * 100;
+        return res;
+    }
+    public static String getOneway(int annotation) {
+        if (annotation % 10 == 1) {
+            return "yes";
+        } else if (annotation % 10 == 2) {
+            return "-1";
+        }
+        return "";
+    }
+    public static int getFow(int annotation) {
+        return ((annotation / 10) % 10) - 1;
+    }
+    public static int getFrc(int annotation) {
+        return ((annotation / 100) % 10) - 1;
     }
 
     public void annotate() {
@@ -72,10 +99,15 @@ public class Annotator {
                         .orElse("");
                     int frc = inferFrc(highwayTag, constructionTag);
                     int fow = inferFow(highwayTag, constructionTag, junctionTag);
-                    if (ls != null) {
-                        Coordinate centroid = ls.getCentroid().getCoordinate();
-                        wayMap.put(way.getId(), new HudhudWay(way.getId(), ls, highwayTag, centroid, fow ,frc, onewayTag));
+                    int annotation = getAnnotationInt(frc, fow, onewayTag);
+                    annotatedWays.put(way.getId(), annotation);
+                    if (ls != null &&fow == 3 && (onewayTag.equals("yes") || onewayTag.equals("-1"))) {
+                        wayMap.put(way.getId(), new HudhudWay(way.getId(), ls, highwayTag, ls.getCentroid().getCoordinate(), fow ,frc, onewayTag));
                     }
+                    // if (ls != null) {
+                    //     Coordinate centroid = ls.getCentroid().getCoordinate();
+                    //     wayMap.put(way.getId(), new HudhudWay(way.getId(), ls, highwayTag, centroid, fow ,frc, onewayTag));
+                    // }
                 }
                 else if (entity instanceof Node) {
                     Node node = (Node) entity;
@@ -104,20 +136,14 @@ public class Annotator {
             thread.join();           
             List<HudhudWay> ways = new ArrayList<>();
             for (Map.Entry<Long, HudhudWay> entry : wayMap.entrySet()) {
-                if (entry.getValue().getFow() == 3 && (entry.getValue().getOneway().equals("yes") || entry.getValue().getOneway().equals("-1"))) {
-                    ways.add(entry.getValue());
-                }
+                ways.add(entry.getValue());
             }
             Map<String, List<HudhudWay>> waysByHighwayTag = ways.stream()
                 .collect(Collectors.groupingBy(HudhudWay::getHighwayTag));
             for (Map.Entry<String, List<HudhudWay>> entry : waysByHighwayTag.entrySet()) {
                 multiCarriageways(entry.getValue());
             }
-            Map<Integer, List<HudhudWay>> waysByfow = wayMap.values().stream()
-                .collect(Collectors.groupingBy(HudhudWay::getFrc));
-            for (Map.Entry<Integer, List<HudhudWay>> entry : waysByfow.entrySet()) {
-                System.out.println(entry.getKey() + ": " + entry.getValue().size());
-            }
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -218,9 +244,9 @@ public class Annotator {
             }
             if (candidates.size() > 0) {
                 for (Long candidate : candidates) {
-                    wayMap.get(candidate).setFow(2);
+                    annotatedWays.put(candidate, getAnnotationInt(wayMap.get(candidate).getFrc(), 2, wayMap.get(candidate).getOneway()));
                 }
-                wayMap.get(sortedEntries.get(i).getKey()).setFow(2);
+                annotatedWays.put(sortedEntries.get(i).getKey(), getAnnotationInt(wayMap.get(sortedEntries.get(i).getKey()).getFrc(), 2, wayMap.get(sortedEntries.get(i).getKey()).getOneway()));
             }
             i++;
         }
@@ -257,7 +283,7 @@ public class Annotator {
         return gd.s12;
     }
 
-    public Map<Long, HudhudWay> getWayMap() {
-        return wayMap;
+    public Map<Long, Integer> getAnnotatedWays() {
+        return annotatedWays;
     }
 }

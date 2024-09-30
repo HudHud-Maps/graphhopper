@@ -1,16 +1,20 @@
 services:
-  maven:
-    image: maven:3.9.5-eclipse-temurin-21
-    volumes:
-      - .:/app
-    working_dir: /app
+  postgis:
+    image: postgis/postgis:16-master
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      PGUSER: postgres
     ports:
-      - "8989:8989"
-    command: ["sleep", "infinity"]
-  # java:
-  #   image: eclipse-temurin:21.0.1_12-jre
-  #   volumes:
-  #     - .:/app
-  #   command: ["sleep", "infinity"]
-  #   environment:
-  #     - JAVA_OPTS="-Xmx1g -Xms1g"
+      - "5435:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 30s
+      retries: 10
+      start_period: 1s
+volumes:
+  db-data:

@@ -10,4 +10,16 @@ public class GhNode {
         this.lat = lat;
         this.lon = lon;
     }
+
+    public int getId() {
+        return this.nodeId;
+    }
+
+    public double getLat() {
+        return this.lat;
+    }
+
+    public double getLon() {
+        return this.lon;
+    }
 }
